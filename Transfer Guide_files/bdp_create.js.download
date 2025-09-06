@@ -1,0 +1,660 @@
+// TODO: Consolidate show lab button logic 
+// Always show when:
+// lab input has value 
+// lab input has equivs
+//
+// if not the above, show when when 
+
+var show_lab_button_hours;
+var bdp_row_visibility_map;
+
+	jQuery(document).on('hours:recalculate', function()
+	{
+		var total = 0;
+		var section_hours, section_max_hours;
+		
+
+		jQuery('table.cc-entries tr').each(function()
+				{
+					var $row = jQuery(this);
+					
+					if ($row.hasClass('section-heading'))
+					{
+						total = 0;	
+
+						section_hours = $row.attr('x_credit_hours');
+						section_max_hours = $row.attr('x_max_credit_hours');
+					}
+
+					if ($row.hasClass('entry-row'))
+					{
+						var credit_hours = 0;
+
+
+						$row.find('.bdp-cc-course').each(function()
+								{
+									credit_hours = parseFloat(jQuery(this).attr('x_credit_hours'));
+								});
+
+						$row.find('.bdp-cc-course-list').each(function()
+								{
+									var choice_id = jQuery(this).val();
+									
+									if (choice_id != '' && bdp_int_check(choice_id))
+									{
+										credit_hours = bdp_cc_choice_hours[choice_id];
+									}
+									else if (choice_id != '' && bdp_int_check(choice_id) == false)
+									{
+										var custom_credit_hours = $row.find('.custom-credit-hours').val();
+
+										if (custom_credit_hours && bdp_float_check(custom_credit_hours))
+										{
+											total+= parseFloat(custom_credit_hours);
+										}
+									}
+								});
+
+
+						if (credit_hours)
+						{
+							$row.find('td .credit-hours').html(credit_hours);
+
+							total += parseFloat(credit_hours);
+						}
+
+						if (credit_hours == null || credit_hours < bdp_show_lab_button_hours)
+						{
+							$row.find('.show-lab-button').hide();
+						}
+						else if ($row.find('.univ-lab-list').is(':visible') == false)
+						{
+							$row.find('.show-lab-button').show();
+						}
+
+						$row.attr('x_calculated_hours', credit_hours);
+					}
+
+					if ($row.hasClass('section-total'))
+					{
+						var $sum, ok, of_text;
+
+						ok = false;
+						of_text = '';
+						$sum = $row.find('td.section-hours-sum') 
+
+
+
+						$sum.html(total);
+
+						if (section_hours != '')
+						{
+							if (section_max_hours != '')
+							{
+								of_text = ' of ' + section_hours + '-' + section_max_hours;
+	
+								if (total <= section_max_hours && total >= section_hours)
+								{
+									ok = true;
+								}
+							}
+							else
+							{
+								of_text = ' of ' + section_hours;
+	
+								if (total == section_hours)
+								{
+									ok = true;
+								}
+							}
+						}
+
+						$sum.html(total + of_text);
+
+						if (ok)
+						{
+							$sum.addClass('good');
+							$sum.removeClass('bad');
+						}
+						else
+						{
+							$sum.addClass('bad');
+							$sum.removeClass('good');
+						}
+					}
+				});
+			
+
+	});
+
+	//jQuery(document).on('select2:open', function (e) {
+		//jQuery(e.target).focus();
+ 	//});
+
+
+
+	/**
+
+	  initialize an existing <select></select> which currently
+	  has no options.
+
+		options in select2 format
+		[
+			{
+				'id' => 
+				'text' =>
+			}
+			...
+		]
+
+
+	  headers in format
+	  {
+			[default] => <Default Group Text String>
+			[groups] =>
+				[
+					{
+						'title' => Title
+						'values' => [
+							'<value>',
+							'<value>',
+							...
+						]
+					}
+					...
+				]
+	  }
+
+	  */
+
+
+	function bdp_initialize_select2(id, options, selectedOption, headers, addConfig)
+	{
+
+		var optionsCopy = [];
+
+		addConfig = addConfig || {};
+
+
+		var indexesByValue = {};
+		var hasGroup = false;
+
+		// add empty option so nothing will be selected to 
+		// start off with
+		if ((addConfig['multiple'] || null) == null)
+		{
+			optionsCopy = [{id:'', text:''}];
+		}
+
+		if (headers && typeof(headers) == 'object' && headers.hasOwnProperty('groups'))
+		{
+			hasGroup = true;
+
+
+			for (var groupIndex = 0; groupIndex < headers.groups.length; groupIndex++)
+			{
+				for (var valueIndex = 0; valueIndex < headers.groups[groupIndex]['values'].length; valueIndex++)
+				{
+					indexesByValue[headers.groups[groupIndex]['values'][valueIndex]] = groupIndex;
+				}
+
+				optionsCopy.push({text:headers.groups[groupIndex].title, children:[]});
+			}
+
+			optionsCopy.push({text:headers.default, children:[]});
+		}
+
+		for (var i = 0; i < options.length; i++)
+		{
+			var newOption = {id:options[i].id, text:options[i].text};
+
+			if (
+					(Array.isArray(selectedOption) && selectedOption.includes(newOption['id']))
+					||
+					(!Array.isArray(selectedOption) && newOption['id'] == selectedOption))
+			{
+				newOption['selected'] = true;
+			}
+
+			if (hasGroup)
+			{
+				if (indexesByValue.hasOwnProperty(newOption.id))
+				{
+
+					var originalGroupIndex = indexesByValue[newOption.id];
+					// +1 means skip blank one
+					optionsCopy[originalGroupIndex+1].children.push(newOption);
+				}
+				else
+				{
+					// last one is default one
+					optionsCopy[optionsCopy.length-1].children.push(newOption);
+				}
+			}
+			else
+			{
+				optionsCopy.push(newOption);
+			}
+		}
+
+		if (hasGroup && optionsCopy[1].children.length == 0)
+		{
+			optionsCopy[1].children.push({id:-1, text:'None', disabled:true});
+		}
+
+		var config = {
+			data: optionsCopy,
+			'dropdownCssClass':'select2',
+			'allowClear':true
+		};
+
+		if (typeof(addConfig) == 'object')
+		{
+			for (prop in addConfig)
+			{
+				config[prop] = addConfig[prop]
+			}
+		}
+
+		var selector = '#' + jQuery.escapeSelector(id);
+		var $obj = jQuery(selector)
+
+		$obj.empty();
+
+		jQuery(selector).removeClass('waiting');
+		jQuery(selector).select2(config);
+	}
+
+
+	function bdp_format_select2_course(course) 
+	{
+
+		if (!course.id) 
+		{
+			return course.text;
+		}
+
+
+
+		var $course = jQuery('<li class="bdp-uni-option" ></li>').text(course.text);
+
+		if (course.is_equiv == '1')
+		{
+			$course.addClass('equiv-option');
+		}
+
+		return $course;
+    };
+
+
+	/* select2 for university courses */
+
+	function bdp_initialize_select2_uni_course(id,  selectedId, selectedText, clear, addConfig)
+	{
+		var selector = '#' + jQuery.escapeSelector(id);
+		var $obj = jQuery(selector)
+
+		if (typeof clear == 'undefined')
+		{
+			clear = false;
+		}
+
+
+		var config = {
+
+			templateResult: bdp_format_select2_course,
+			allowClear:true,
+			placeholder: "Enter " + jQuery('#bdp_inst_name').val() + " Course",
+			ajax: {
+				url: cms_getWWWPath() + 'bdp/data.php',
+				dataType: 'json',
+				delay: 100,
+				minimumInputLength: 2,
+				data: function (params) {
+					// compose search query
+					var query = {
+						type: 's2_univ_courses',
+						text: params.term,
+						inst: jQuery('#bdp_inst_code').val(),
+						page: params.page || 1,
+						eid: $obj.closest('tr').attr('x_entry_id'),
+						cid: $obj.closest('tr').find('.bdp-cc-course-list').val(),
+						ctype: $obj.hasClass('univ-lab-list')?'lab':'course'
+      			}
+	
+      			return query;
+  				}
+  			}
+		};
+
+
+		$obj.trigger('destroy');
+
+		if ((selectedId) != 'undefined' && selectedId && selectedText)
+		{
+			clear = true;
+		}
+
+		if (clear)
+		{
+			$obj.empty();
+		}
+
+		if ((selectedId) != 'undefined' && selectedId && selectedText)
+		{
+			   var opt = document.createElement('option');
+            opt.value = selectedId;
+            opt.innerHTML = selectedText;
+
+				$obj.append(opt);
+		}
+
+		if (typeof(addConfig) == 'object')
+		{
+			for (prop in addConfig)
+			{
+				config[prop] = addConfig[prop]
+			}
+		}
+
+		jQuery(selector).removeClass('waiting');
+		jQuery(selector).select2(config);
+	}
+
+
+	// when OR checkbox clicked, show OR textarea
+	jQuery(document).on('click', 'input.or-option[type="checkbox"]', function(e){
+
+		var $textarea = jQuery(this).closest('tr').find('.or-details');
+
+		if (this.checked)
+		{
+			$textarea.show();
+		}
+		else
+		{
+			$textarea.hide();
+		}
+	});
+
+
+
+	function bdp_float_check(str)
+	{
+		const number = Number(str);
+		const isPositive = number > 0;
+
+		str = String(str).trim();
+		isFloat = str.match(/^\d*\.?\d+$/);
+
+ 		return isFloat && isPositive;	
+	}
+
+	// check is input valid integer.
+
+	function bdp_int_check(str)
+	{
+		const number = Number(str);
+		const isInteger = Number.isInteger(number);
+		const isPositive = number > 0;
+
+ 		return isInteger && isPositive;
+	}
+
+	function bdp_show_hide_wildcard_fields($tr)
+	{
+		var is_student_choice = false;
+		var is_other_wildcard = false;
+		var or_checked = false;
+		var showTypes = {};
+
+
+		if ($tr.find('.bdp-cc-course-list').length == 1)
+		{
+			var choiceVal = '';
+
+			choiceVal = $tr.find('.bdp-cc-course-list').val();
+
+			if (choiceVal != '' && bdp_int_check(choiceVal) == false && choiceVal == 'studentchoice') 
+			{
+				is_student_choice = true;
+			}
+			else if (choiceVal != '' && bdp_int_check(choiceVal) == false)
+			{
+				is_other_wildcard = true;
+			}
+		}
+
+
+
+		if ($tr.find('.or-option').is(':checked'))
+		{
+			or_checked = true;
+		}
+
+		for (var i = 0; i< bdp_row_visibility_map.length; i++)
+		{
+			var map_row = bdp_row_visibility_map[i];
+
+			// see bdp_entry_row_visibility_map()
+			var value_type = map_row[0];
+			var hide_if_student_choice = map_row[1];
+			var hide_if_other_wildcard = map_row[2];
+			var hide_if_or = map_row[3];
+
+			var when_shown_selector = '.when-'+value_type+'-showing';
+			var when_hidden_selector = '.when-'+value_type+'-hidden';
+
+			if (
+					(is_student_choice && hide_if_student_choice)
+					||
+					(is_other_wildcard && hide_if_other_wildcard)
+					||
+					(or_checked && hide_if_or)
+				)
+			{
+				$tr.find(when_shown_selector).hide();
+				$tr.find(when_hidden_selector).show();
+				showTypes[value_type] = false;
+			}
+			else
+			{
+				showTypes[value_type] = true;
+				$tr.find(when_shown_selector).show();
+				$tr.find(when_hidden_selector).hide();
+			}
+		}
+
+		// if any of these things are true,
+		// return so won't fetch equivs
+		return showTypes;
+		//return (is_student_choice || is_other_wildcard || or_checked);
+	}
+
+	// show hide wildcard fields based on or checkbox
+	jQuery(document).on('click', '.or-option', function(e){
+		bdp_show_hide_wildcard_fields(jQuery(e.target).closest('tr'));
+	});
+
+	// When user selects a CC course, get the equiv suggestions
+	jQuery(document).on('select2:select', '.bdp-cc-course-list', function(e){
+
+		var element = this;
+
+		var showTypes = bdp_show_hide_wildcard_fields(jQuery(e.target).closest('tr'));
+
+		if (e.params.data.id != '' && !!showTypes['equiv'])
+		{
+			var entry_id =  jQuery(this).closest('tr').attr('x_entry_id');
+			var choice_id  = e.params.data.id;
+
+
+			jQuery(element).closest('tr').find('.univ-choice-wrapper .select2-selection__rendered').addClass('waiting');
+
+
+			jQuery.ajax({
+						type: 'GET', 
+						url: cms_getWWWPath() + 'bdp/data.php',
+						data: {inst: jQuery('#bdp_inst_code').val(), eid: entry_id, cid: choice_id, type: 'entry_equiv_lookup'},
+						success: function (data, textStatus, jqXHR )
+						{
+
+							/*
+								 Either
+									1) display value in textbox if one equiv
+									2) compose suggestions div if multiple equivs
+
+							*/
+							data = JSON.parse(data);
+
+							jQuery(element).closest('tr').find('.univ-choice-wrapper .select2-selection__rendered').removeClass('waiting');
+
+							var course_info, lab_info, course_title, course_value, lab_title, lab_value;
+
+							// TODO: Dedup course/lab code
+
+							if (data['course_equivs_info'].length == 1)
+							{
+								course_info =  data['course_equivs_info'][0];
+								course_title = course_info['option_title'];
+								course_value = course_info['course_name_number'];
+
+							}
+							else
+							{
+								course_info = null;
+							}
+
+							var select2CourseHeaders = 	{
+								'default':'Other Courses',
+								'groups':[{
+									'title': 'Equivalencies',
+									'values': data['course_equivs']
+								}]
+							}
+
+							var course_text = null;
+
+							var otherCourseConfig ={ 'placeholder': "Enter " + jQuery('#bdp_inst_name').val() + " Course" };
+								
+							bdp_initialize_select2_uni_course(jQuery(element).closest('tr').find('.univ-course-list').attr('id'), course_value, course_title, true);
+
+
+
+
+							if (data['lab_equivs_info'].length == 1)
+							{
+								lab_info =  data['lab_equivs_info'][0];
+								lab_title = lab_info['option_title'];
+								lab_value = lab_info['course_name_number'];
+							}
+							else
+							{
+								lab_info = null
+							}
+
+							if (data['lab_equivs_info'].length > 0)
+							{
+								jQuery(element).closest('tr').trigger('show:lab');
+							}
+
+							var select2LabHeaders = 	{
+								'default':'Other Courses',
+								'groups':[{
+									'title': 'Equivalencies',
+									'values': data['lab_equivs']
+								}]
+							}
+
+							// todo:dedup placeholer
+							var otherLabConfig ={ 'placeholder': "Enter Lab (If Applicable)" };
+					
+
+							if (lab_info != null)
+							{
+								jQuery(this).closest('tr').find('.show-lab-button').hide();
+							}
+
+							bdp_initialize_select2_uni_course(jQuery(element).closest('tr').find('.univ-lab-list').attr('id'), lab_value, lab_title, true);
+
+					}
+			});
+
+		}
+		else
+		{
+			bdp_initialize_select2_uni_course(jQuery(element).closest('tr').find('.univ-lab-list').attr('id'), null, null, true);
+			bdp_initialize_select2_uni_course(jQuery(element).closest('tr').find('.univ-course-list').attr('id'), null, null, true);
+		}
+
+		jQuery(document).trigger('hours:recalculate'); 
+	});
+
+
+
+	// when OR checkbox clicked, show OR textarea
+	jQuery(document).on('show:lab', 'tr', function(e){
+		jQuery(this).find('.univ-lab-wrapper').show();
+		jQuery(this).find('.show-lab-button').hide();
+	});
+
+	jQuery(document).on('hide:lab', 'tr', function(e){
+		jQuery(this).find('.univ-lab-wrapper').hide();
+		jQuery(this).find('.show-lab-button').show();
+	});
+
+
+	/**
+	 * @param selector	selector for button
+	 * @param html html to add to the row before the button
+	 * 	should have {~seq~} in it, which will be replaced with an integer
+	 * @param test_id  will make sure this ID does not exist before adding
+	 * 	should have {~seq~} in it, which will be replaced with an integer.
+	 * 	will count starting from 1 to max (currently 100)
+	 * 	
+	 *
+	 */
+	function bdp_make_new_row_button(selector, html, test_id)
+	{
+		jQuery(selector).click(function() {
+
+			var  max=200, new_id;
+
+			for (var seq=1; seq <= max; seq++)
+			{
+
+				new_id = test_id.replace('{~seq~}', seq);
+
+
+				if (jQuery('#'+jQuery.escapeSelector(new_id)).length ==0)
+				{
+					var new_html = html.replaceAll('{~seq~}', seq);
+
+					jQuery(this).closest('tr').before(new_html);
+					break;
+				}
+			}
+		});
+	}
+
+	jQuery(document).on('click', '.bdp-remove-row', function()
+	{
+
+		jQuery(this).closest('tr').find('.cms_ck_name_hidden_input').each(function() {
+			var ck = jQuery(this).val()
+
+			// TODO: Can make this generic and part of CMS when
+			// an event happens saying something is about to be 
+			// deleted.
+                        if (CKEDITOR.instances[ck])
+                        {
+                                CKEDITOR.instances[ck].destroy();
+                        }
+                });
+
+			
+    		jQuery(this).closest('tr').remove();
+		jQuery(document).trigger('hours:recalculate'); 
+	});
+
+

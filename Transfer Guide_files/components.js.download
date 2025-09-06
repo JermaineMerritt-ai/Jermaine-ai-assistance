@@ -1,0 +1,199 @@
+
+/**
+ * Usage: put in a container with uncso-js class
+ *
+ * give up/down (or left/right buttons) .move-button class 
+ * and up or down class
+ * 
+ * give the siblings to be moved a movable class.
+ *
+ * will add first-item and last-item classes to first
+ * and last movable.  However, you could probably
+ * hide the up and down arrows as necessary using CSS
+ * even without the first-item and last-item classes.
+ *
+ */
+
+jQuery(document).on('click', '.uncso-js .movable .move-button', function(event) {
+
+	var $this = jQuery(this);
+
+	var thisIndex = $this.closest('.movable').index();
+	var itemList = $this.closest('.movable')[0].parentElement.children;
+
+	var delta;
+
+	var thisRow = itemList[thisIndex];
+
+
+	if ($this.hasClass('up'))
+	{
+		delta = -1;
+	}
+	else if ($this.hasClass('down'))
+	{
+		delta = +1;
+	}
+	else
+	{
+		return;
+	}
+
+
+	// now swap the element positions
+	var otherIndex;
+
+	otherIndex = thisIndex + delta;
+
+	if (jQuery(itemList[otherIndex]).hasClass('movable'))
+	{
+
+		var firstIndex, secondIndex;
+
+		if (thisIndex > otherIndex)
+		{
+			firstIndex = otherIndex;
+			secondIndex = thisIndex;
+		}
+		else
+		{
+			firstIndex = thisIndex;
+			secondIndex = otherIndex;
+		}
+
+		var oThis = this;
+
+
+		jQuery(itemList[thisIndex]).trigger('uncso:beforemove', [{
+			elementClicked:oThis,
+			itemClickedOn:itemList[thisIndex],
+			swappingWithItem:itemList[otherIndex],
+			relocatingItem:itemList[secondIndex],
+			moveDirection:$this.hasClass('up')?'up':'down'
+		}]);
+
+		itemList[firstIndex].parentNode.insertBefore(itemList[secondIndex], itemList[firstIndex]);
+
+		var $movableItems = jQuery(itemList).filter('.movable');
+		$movableItems.removeClass('last-item first-item');
+		$movableItems.first().addClass('first-item');
+		$movableItems.last().addClass('last-item');
+	
+		jQuery(itemList[thisIndex]).trigger('uncso:aftermove', [{
+			elementClicked:oThis,
+			itemClickedOn:itemList[thisIndex],
+			swappingWithItem:itemList[otherIndex],
+			moveDirection:$this.hasClass('up')?'up':'down'
+		}]);
+
+
+		thisRow.scrollIntoView({ behavior: 'smooth'});
+	}
+});
+
+	
+/**
+ * In container with class tab, inside container with class .uncso-js:
+ *  Give tabs with "tablink" class
+ *  Give content container  "tabcontent" class
+ *  For tab content, give attribute data-content-for with
+ *     the ID of the tab.
+ */
+
+jQuery(document).on('click', '.uncso-js .tabs .tablink', function() 
+{
+		
+	var i, tabcontent, tablinks;
+
+	// Get all elements with class="tabcontent" and hide or show
+	// them as necessary
+	tabs = this.closest('.tabs');
+
+	tabcontent = jQuery(tabs).find(' > .tabcontent').toArray();
+
+	var clickedID = this.getAttribute('id');
+
+	for (i = 0; i < tabcontent.length; i++) {
+		if (tabcontent[i].getAttribute('data-content-for') == clickedID)
+		{
+			tabcontent[i].style.display = 'block';
+			tabcontent[i].hidden = false;
+		}
+		else
+		{
+			tabcontent[i].style.display = 'none';
+			tabcontent[i].hidden = true;
+		}
+	}
+
+	// Get all elements with class="tablink" and add or remove 
+	// the class "active" as necessary
+
+	tablinks = jQuery(tabs).find(' > .tab > .tablink').toArray();
+
+	for (i = 0; i < tablinks.length; i++) {
+
+		if (tablinks[i] == this)
+		{
+			tablinks[i].setAttribute('aria-selected', true);
+			tablinks[i].classList.add('active');
+		}
+		else
+		{
+			tablinks[i].setAttribute('aria-selected', false);
+			tablinks[i].classList.remove('active');
+		}
+	}
+
+	var oThis = this;
+
+	jQuery(this).trigger('uncso:tabclick', [{
+			elementClicked:oThis
+		}]);
+
+});
+
+
+/**
+ * .accordion-toggle is accordion bar
+ * .accordion-content is content below accordion bar
+ * i in .accordion-toggle is arrow with .rot class if open.
+ */
+
+jQuery(document).on('click', '.uncso-js .accordion .accordion-toggle', function() {
+	var $btn = jQuery(this);
+
+	var $content = jQuery(this).next('.accordion-content');
+
+	if ($content.is(':visible')) {
+		//jQuery('i', $btn).removeClass('rot');
+		$btn.find('i').removeClass('rot');
+		$btn.removeClass('active');
+	} else {
+		//jQuery('i', $btn).addClass('rot');
+		$btn.find('i').addClass('rot');
+		$btn.addClass('active');
+	}
+
+	var action;
+
+	jQuery($content).slideToggle(function() {
+		if (jQuery($content).is(':visible')) {
+			action = 'show';
+			jQuery($content).prop('hidden', false);
+			jQuery($btn).attr('aria-expanded', true);
+		} else {
+			action = 'hide';
+			jQuery($content).prop('hidden', true);
+			jQuery($btn).attr('aria-expanded', false);
+		}
+	});
+
+	var oThis = this;
+
+	jQuery(this).trigger('uncso:accordiontoggle', [{
+			elementClicked:oThis,
+			action:action
+		}]);
+
+});

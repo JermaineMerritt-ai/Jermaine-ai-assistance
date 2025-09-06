@@ -1,0 +1,395 @@
+// need a global var
+bdp_course_catalog_for_typeahead = null;
+
+//////////TABS//////////
+function openTab(evt, target, fn) {
+	var i, tabcontent, tablinks;
+
+	if (evt.currentTarget.className.includes(' active')) {
+		// user clicked on an already active tab
+		return;
+	}
+
+	if (typeof fn == 'function') {
+		fn();
+	}
+
+	// Get all elements with class="tabcontent" and hide them
+	tabs = document.getElementById(target).closest('.tabs');
+
+	tabcontent = tabs.getElementsByClassName('tabcontent');
+
+	for (i = 0; i < tabcontent.length; i++) {
+		tabcontent[i].style.display = 'none';
+		tabcontent[i].hidden = true;
+	}
+
+	// Get all elements with class="tablinks" and remove the class "active"
+	tablinks = tabs.getElementsByClassName('tablinks');
+	for (i = 0; i < tablinks.length; i++) {
+		tablinks[i].className = tablinks[i].className.replace(' active', '');
+	}
+
+	// Show the current tab, and add an "active" class to the button that opened the tab
+	document.getElementById(target).style.display = 'block';
+	document.getElementById(target).hidden = false;
+	evt.currentTarget.className += ' active';
+}
+
+/*
+	function rowArrowExpand(headerDiv)
+	{
+			var detail = jQuery(headerDiv).next(jQuery('tr.details'));
+			var header = jQuery(headerDiv);
+
+			jQuery(headerDiv)
+				.next(jQuery('tr.details'))
+				.slideToggle(function() {
+					if (jQuery(detail).is(':visible')) {
+						jQuery(detail).prop('hidden', false);
+						jQuery(header).attr('aria-expanded', true);
+					} else {
+						jQuery(detail).prop('hidden', true);
+						jQuery(header).attr('aria-expanded', false);
+					}
+				});
+			jQuery(headerDiv)
+				.find(jQuery('.arrow > i'))
+				.toggleClass('fa-chevron-down fa-chevron-up');
+	}
+	*/
+
+//////////EXPAND ROW TABLE//////////
+jQuery(document).on('click', '.expand-table .header', function() {
+	var detail = jQuery(this).next(jQuery('tr.details'));
+	var header = jQuery(this);
+	jQuery(this)
+		.next(jQuery('tr.details'))
+		.slideToggle(function() {
+			if (jQuery(detail).is(':visible')) {
+				jQuery(detail).prop('hidden', false);
+				jQuery(header).attr('aria-expanded', true);
+			} else {
+				jQuery(detail).prop('hidden', true);
+				jQuery(header).attr('aria-expanded', false);
+			}
+		});
+	jQuery(this)
+		.find(jQuery('.arrow > i'))
+		.toggleClass('fa-chevron-down fa-chevron-up');
+});
+
+jQuery(document).on('click', '.flyout-action', function(e) {
+	jQuery('#flyout-content').empty();
+	jQuery('#flyout').addClass('flyout-visible');
+	jQuery('#flyout_css').attr('media', 'print');
+	ajax_doUpdater('flyout-content', jQuery(this).data('flyout-url'));
+});
+
+jQuery(document).on('click', '.flyout .flyout-close-button', function(e) {
+	jQuery('#flyout').removeClass('flyout-visible');
+	jQuery('#flyout_css').attr('media', 'none');
+});
+
+jQuery(document).on('select2:open', function(e) {
+	setTimeout(function() {
+		var elem = jQuery('.select2-container--open .select2-search__field').get(0);
+
+		if (elem != document.activeElement) {
+			elem.focus();
+		}
+	}, 0);
+});
+
+function bdp_copy_to_clipboard(id) {
+	var copyText = jQuery('#' + id).text();
+
+	navigator.clipboard.writeText(copyText);
+}
+
+//////////CHECK SELECT DROPDOWN//////////
+jQuery(document).on('click', '.check-select', function(event) {
+	jQuery(this)
+		.next('.check-select-list')
+		.css(
+			'width',
+			jQuery(this)
+				.closest(jQuery('.check-select'))
+				.width()
+		);
+	jQuery(this)
+		.next('.check-select-list')
+		.toggle();
+	event.stopPropagation();
+});
+
+jQuery(document).on('click', '.check-select-wrapper', function(event) {
+	event.stopPropagation();
+});
+
+/*--Handle Check All for DropdownCheckList--*/
+jQuery(document).on('change', ".check-select-list input:checkbox[name='checkAll']", function() {
+	var target = '#' + jQuery(this).data('target');
+	if (jQuery(this).is(':checked')) {
+		jQuery(target)
+			.find('.check-select-list input:checkbox')
+			.prop('checked', true);
+		jQuery(target)
+			.find('.check-select-input')
+			.val('All');
+	} else {
+		jQuery(target)
+			.find('.check-select-list input:checkbox')
+			.prop('checked', false);
+		jQuery(target)
+			.find('.check-select-input')
+			.val('');
+	}
+
+	jQuery('.check-select-list input:checkbox:last').trigger('uncso:recalc-checkboxes');
+});
+
+jQuery(document).ready(function() {
+	jQuerychecks = jQuery('.check-select-list input:checkbox').not("[name='checkAll']");
+
+	jQuerychecks.on('change uncso:recalc-checkboxes', function() {
+		var target =
+			'#' +
+			jQuery(this)
+				.closest('.check-select-wrapper')
+				.attr('id');
+
+		var string = jQuery(target)
+			.find(jQuerychecks.filter(':checked'))
+			.map(function(i, v) {
+				return jQuery(this).data('text');
+			})
+			.get()
+			.join(', ');
+
+		var checksLength = jQuery(target).find(jQuerychecks).length;
+
+		var xLength = jQuery(target).find(jQuerychecks.filter(':checked')).length;
+
+		jQuery(target)
+			.find('.check-select-input')
+			.val(string);
+
+		if (checksLength == xLength) {
+			jQuery(target)
+				.find("input:checkbox[name='checkAll']")
+				.prop('checked', true);
+			jQuery(target)
+				.find('.check-select-input')
+				.val('All');
+		} else {
+			jQuery(target)
+				.find("input:checkbox[name='checkAll']")
+				.prop('checked', false);
+		}
+
+		jQuery(document).trigger('form:changed');
+
+		/*
+		if (jQuery('.check-select-list input:checked').not("[name='checkAll']").length > 0)
+		{
+			jQuery('.must-select-inst').attr('disabled', false);
+		}
+		else
+		{
+			jQuery('.must-select-inst').attr('disabled', true);
+		}
+*/
+	});
+
+	jQuery('.check-select-list input:checkbox:last').trigger('uncso:recalc-checkboxes');
+});
+
+jQuery(document).on('change', '.watch-for-change', function() {
+	jQuery(document).trigger('form:changed');
+});
+
+// make .must-select-inst, .must-select-ace-id buttons disabled or enabled when
+// appropriate
+
+jQuery(document).on('form:changed', function() {
+	jQuery('.must-select-inst, .must-select-ace-id').each(function() {
+		var $this = jQuery(this);
+		var enabled = true;
+
+		if ($this.hasClass('must-select-inst') && jQuery('.check-select-list input:checked').not("[name='checkAll']").length < 1) {
+			enabled = false;
+		}
+		if ($this.hasClass('must-select-ace-id') && jQuery('input.ace-id-selection:checked').length < 1) {
+			enabled = false;
+		}
+
+		if (enabled) {
+			if ($this.hasClass('display-when-applicable')) {
+				$this.show();
+			}
+
+			$this.attr('disabled', false);
+		} else {
+			$this.attr('disabled', true);
+		}
+	});
+});
+
+jQuery(document).click(function() {
+	if (jQuery('.check-select-list').is(':visible')) {
+		jQuery('.check-select-list').hide();
+	}
+});
+
+/**
+ * Open flyout and replace contents using form or URL, then
+ * show the result flout content container
+ */
+
+function eq_flyout_open(form_id, action, extra_params_selector) {
+	var width = null;
+	var extraFormParams = { asAjax: 'Y', flyout: '1' };
+
+	var $content_div = jQuery('#flyout-content');
+
+	if (typeof action != 'undefined' && action && form_id) {
+		jQuery('#' + form_id).attr('action', action);
+	}
+
+	if (typeof extra_params_selector == 'string' && extra_params_selector) {
+		var selectorParams = jQuery(extra_params_selector).serializeArray();
+
+		for (var i = 0; i < selectorParams.length; i++) {
+			extraFormParams[selectorParams[i].name] = selectorParams[i].value;
+		}
+	}
+
+	//$content_div.addClass('loading');
+
+	$content_div.html('');
+
+	//jQuery('body').css('overflow','hidden');
+
+	jQuery('#flyout').addClass('flyout-visible');
+	jQuery('#flyout').prop('hidden', false);
+
+	var extraUpdaterParamsObj = {
+		onSuccess: function(response) {
+			$content_div.removeClass('spin_div');
+			//$content_div.removeClass('loading');
+			setTimeout(function() {
+				document.fire('cms:ajax_update', { divId: 'flyout-content' });
+			}, 1);
+
+			jQuery(document)
+				.off('keydown.flyout')
+				.on('keydown.flyout', document, function(event) {
+					if (event.key == 'Escape') {
+						eq_flyout_close();
+					}
+				});
+		},
+		method: 'post',
+	};
+
+	if (form_id) {
+		ajax_submitForm('flyout-content', form_id, extraFormParams, extraUpdaterParamsObj);
+	} else {
+		ajax_doUpdater('flyout-content', action, extraFormParams, extraUpdaterParamsObj);
+	}
+}
+
+function eq_flyout_close() {
+	jQuery(document).off('keydown.flyout');
+	jQuery('#flyout').removeClass('flyout-visible');
+	jQuery('#flyout').prop('hidden', true);
+	jQuery('#flyout-content').html('');
+}
+
+jQuery(document).on('uncso:aftermove', function(e, extra) {
+	// restore CKEditor contents
+	CK_after_move(extra.itemClickedOn);
+	CK_after_move(extra.swappingWithItem);
+});
+
+jQuery(document).on('uncso:beforemove', function(e, extra) {
+	// calling function in ajax_utils.js
+	// ckEditor will be cleared when moved because they are made of iframes.
+	// must save contents to textarea
+	// could make this run only when item with ckeditor in it moved
+
+	ajax_FCK_prepare_submit();
+});
+
+
+function CK_after_move(jQueryInput) {
+	if (typeof CKEDITOR != 'undefined') {
+		var ckNameInputs;
+
+		// works in CMS7 due to elements containing name of ckeditor hidden
+		// textareas. Makes them easy to find
+		ckNameInputs = jQuery(jQueryInput)
+			.find('input.cms_ck_name_hidden_input')
+			.toArray();
+
+		for (var i = 0; i < ckNameInputs.length; i++) {
+			var editor = CKEDITOR.instances[ckNameInputs[i].value];
+
+			if (editor) {
+				// put the HTML back in the CKEditor
+				var html = jQuery('textarea[name="' + CSS.escape(ckNameInputs[i].value) + '"]').val();
+				editor.setData(html);
+			}
+		}
+	}
+}
+
+/////////CHECKBOX Select ALL//////////
+jQuery(document).on('change', ".check-all input:checkbox[name='checkAll']", function() {
+	var target = jQuery(this).closest('.check-all');
+	if (jQuery(this).is(':checked')) {
+		jQuery(target)
+			.find('input:checkbox')
+			.prop('checked', true);
+	} else {
+		jQuery(target)
+			.find('input:checkbox')
+			.prop('checked', false);
+	}
+});
+
+jQuery(document).on('change', ".check-all input:not([name='checkAll'])", function() {
+	var target = jQuery(this).closest('.check-all');
+	var total = target.find('input:checkbox').not("[name='checkAll']").length;
+	var checked = target
+		.find('input:checkbox')
+		.not("[name='checkAll']")
+		.filter(':checked').length;
+	if (total === checked) {
+		target.find("input:checkbox[name='checkAll']").prop('checked', true);
+	} else {
+		target.find("input:checkbox[name='checkAll']").prop('checked', false);
+	}
+});
+
+//show hide content on html version of transfer guide
+jQuery(document).ready(function() {
+	jQuery('.toggle-trigger').on('click keypress', function(event) {
+		console.log('test');
+		if (event.type === 'click' || (event.type === 'keypress' && event.which === 13)) {
+			tar = jQuery(this).next('.toggle-content');
+			if (jQuery(tar).hasClass('toggle-content-hidden')) {
+				jQuery(tar).removeClass('toggle-content-hidden');
+				jQuery(this).attr('data-status', '-');
+				jQuery(this).attr('aria-expanded', 'true');
+				jQuery(tar).attr('aria-hidden', 'false');
+			} else {
+				jQuery(tar).addClass('toggle-content-hidden');
+				jQuery(this).attr('data-status', '+');
+				jQuery(this).attr('aria-expanded', 'false');
+				jQuery(tar).attr('aria-hidden', 'true');
+			}
+		}
+	});
+});

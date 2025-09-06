@@ -1,0 +1,104 @@
+.pattern-content .pattern-item {
+  padding: 12px 0px; }
+  .pattern-content .pattern-item item {
+    display: block;
+    margin-bottom: 8px; }
+.pattern-content:not(:last-of-type) {
+  margin-bottom: 36px; }
+
+.pattern-title {
+  font-weight: 700;
+  display: block;
+  border-bottom: 1px solid #b9b9b9;
+  margin-bottom: 6px;
+  color: #FF003E;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px; }
+  .pattern-title:not(:first-of-type) {
+    margin-top: 36px; }
+
+#pattern-overlay {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  z-index: 11;
+  background-color: rgba(255, 255, 255, 0.9); }
+  #pattern-overlay #pattern-overlay-box {
+    border: 1px solid #333333;
+    background-color: #FFFFFF;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    height: 90%; }
+    #pattern-overlay #pattern-overlay-box #pattern-header {
+      font-size: 22px;
+      color: #0f4876; }
+    #pattern-overlay #pattern-overlay-box #pattern-overlay-content {
+      flex-grow: 2;
+      overflow-y: auto; }
+      #pattern-overlay #pattern-overlay-box #pattern-overlay-content #codeBox {
+        box-sizing: border-box;
+        width: 100%;
+        height: 98%; }
+    #pattern-overlay #pattern-overlay-box #pattern-overlay-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px; }
+    @media screen and (min-width: 1024px) {
+      #pattern-overlay #pattern-overlay-box {
+        height: 480px;
+        width: 640px; }
+        #pattern-overlay #pattern-overlay-box #codeBox {
+          max-width: 100%; } }
+
+.swatches {
+  display: grid;
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+  grid-gap: 24px; }
+  .swatches .swatch {
+    font-size: 12px; }
+    .swatches .swatch .swatch-color {
+      width: 100%;
+      height: 120px; }
+  @media screen and (min-width: 1024px) {
+    .swatches {
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr; } }
+
+#logos {
+  display: grid;
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+  grid-gap: 32px;
+  align-items: center;
+  justify-content: center; }
+  #logos img {
+    width: 100%;
+    max-width: 200px;
+    max-height: 180px; }
+  @media screen and (min-width: 1024px) {
+    #logos {
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr; } }
+
+#pattern-table-grid {
+  display: grid; }
+  @media screen and (min-width: 1024px) {
+    #pattern-table-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-gap: 48px; } }
+
+.overflow-hidden {
+  overflow-y: hidden; }
+
+/*# sourceMappingURL=patterns.css.map */

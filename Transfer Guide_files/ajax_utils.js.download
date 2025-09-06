@@ -1,0 +1,577 @@
+
+
+// uses prototype, see jquery alternative, ajax_update, below
+function ajax_doUpdater(content_div, url, extra_params_obj, extraUpdaterParamsObj)
+{
+	
+	var param_name;
+	var params = {'asAjax':'Y'};
+		
+	if (typeof extra_params_obj == 'object') {
+		for (var param_name in extra_params_obj) {
+			params[param_name] = extra_params_obj[param_name];
+		}
+	}
+
+	var updaterParams = {
+		onCreate: new Function("ajax_spin_div('" +content_div+ "');"),
+		'method':'get',
+		'parameters': params,
+		'evalScripts': true,
+		'onSuccess': function(response) {
+			setTimeout(function() { document.fire('cms:ajax_update', {divId: content_div}); },1);
+  		},
+		'onException': function(request, e) { console.log('Exception on Ajax load:'); console.log(e); }
+	}
+
+	if (typeof extraUpdaterParamsObj == 'object') {
+		for (var param_name in extraUpdaterParamsObj) {
+			updaterParams[param_name] = extraUpdaterParamsObj[param_name];
+		}
+	}
+
+
+	new Ajax.Updater(content_div, url, updaterParams );
+
+	return false;
+}
+
+
+// uses prototype, see jquery alternative, ajax_submit below
+function ajax_submitForm(divid, frm, extra_params_obj, extraUpdaterParamsObj)
+{
+	// can pass form id or form
+	frm = $(frm);
+
+	ajax_FCK_prepare_submit();
+
+
+	var params =  Form.serialize(frm, true);
+	params.asAjax = 'Y';
+
+
+	// extra params, for example: {'name' : 'Smith', 'id': '5'}
+	// override other params. good for submit buttons w/
+	// same name/different values.
+	
+	if (typeof extra_params_obj == 'object') {
+		for (var param_name in extra_params_obj) {
+			params[param_name] = extra_params_obj[param_name];
+		}
+	}
+
+	var updaterParams = 	{
+			onCreate: new Function("ajax_spin_div('" +divid+ "');"),
+			method: frm.method,
+			parameters: params, 
+			evalScripts: true,
+			onSuccess: function(response) {
+				setTimeout(function() { document.fire('cms:ajax_update', {divId: divid}); },1);
+  			},
+			'onException': function(request, e) { console.log('Exception on Ajax load:'); console.log(e); }
+		}
+
+	if (typeof extraUpdaterParamsObj == 'object') {
+		for (var param_name in extraUpdaterParamsObj) {
+			updaterParams[param_name] = extraUpdaterParamsObj[param_name];
+		}
+	}
+
+	new Ajax.Updater(divid, frm.action,
+		updaterParams
+	);
+	
+	return false;
+}
+
+
+
+// works like ajax_doUpdater, but with jQuery
+function ajax_update(content_div, url, extra_params_obj, extraAjaxParamsObj)
+{
+	
+	var param_name;
+	var params = {'asAjax':'Y'};
+
+	if (content_div == 'lbContent')
+	{
+		params['lightbox'] = '1';
+	}
+		
+	if (typeof extra_params_obj == 'object') {
+		for (var param_name in extra_params_obj) {
+			params[param_name] = extra_params_obj[param_name];
+		}
+	}
+
+	var ajaxParams = {
+		beforeSend: function(jqXHR, settings){
+			ajax_spin_div(content_div);
+		},
+		'type':'get',
+		'data': jQuery.param(params),
+		success: function(data, status, jqXHR){
+			jQuery('#' + content_div).html(data);
+			setTimeout(function() { jQuery(document).trigger('cms:ajax_update', {divId: content_div}); },1);
+  		},
+		'error': function(jqXHR, textStatus, errorThrown ) 
+		{ 
+			console.log('Exception on Ajax load:'); 
+			console.log(errorThrown); 
+			alert('Error: Cannot load content');
+			jQuery('#' + content_div).find('.cms-spin-div-container').remove();
+		}
+	}
+
+	if (typeof extraAjaxParamsObj == 'object') {
+		for (var param_name in extraAjaxParamsObj) {
+			ajaxParams[param_name] = extraAjaxParamsObj[param_name];
+		}
+	}
+
+	jQuery.ajax(url, ajaxParams);
+}
+
+
+
+
+// works like ajax_submitForm, but with jQuery
+/**
+ 
+  	divid - div to update (string).  If pass in true,
+		will look for closest ancestor that looks like
+		ajax div.  See ajax_getContainerID()
+	form - id of form or form DOM object
+	add_extra_params - object of params to add to submit (optional)
+	extraAjaxParamsObj - extra params to jQuery.ajax (optional)
+	directives - object.  Only key that is implemented now is
+		afterSuccess: function to call after div updated
+
+ */
+function ajax_submit(divid, frm, add_extra_params, extraAjaxParamsObj, directives)
+{
+	var $frm;
+
+	// can pass form id or form
+	if (typeof frm == 'string')
+	{
+		$frm = jQuery('#' + frm);
+	}
+	else
+	{
+		$frm = jQuery(frm);
+	}
+
+	ajax_FCK_prepare_submit();
+
+	if (divid === true)
+	{
+		divid = ajax_getContainerID($frm[0]);
+	}
+		 
+	if (typeof add_extra_params != 'object')
+	{
+		add_extra_params = {};
+	}
+
+	add_extra_params['asAjax'] = 'Y';
+
+	if (divid == 'lbContent')
+	{
+		add_extra_params['lightbox'] = '1';
+	}
+
+	var paramsToSubmit = $frm.serializeArray();
+
+	// initialize directives
+	directives = directives?directives:{};
+
+	// extra params, for example: {'name' : 'Smith', 'id': '5'}
+	// override other params. good for submit buttons w/
+	// different values.
+	
+	for (i in paramsToSubmit) 
+	{
+		if (add_extra_params.hasOwnProperty(paramsToSubmit[i].name))
+		{
+			// replace value according to function param
+			paramsToSubmit[i].value = add_extra_params[i];
+			delete add_extra_params[i];
+		}
+	}
+
+
+	for (i in add_extra_params)
+	{
+		// add remaining params
+		paramsToSubmit[paramsToSubmit.length] = {'name':i, 'value':add_extra_params[i]};
+	}
+
+
+	var ajaxParams = {
+		beforeSend: function(jqXHR, settings){
+			ajax_spin_div(divid);
+		},
+		'type':$frm.attr('method'),
+		'data': paramsToSubmit,
+		success: function(data, status, jqXHR){
+			jQuery('#' + divid).html(data);
+
+			if (directives['afterSuccess'])
+			{
+				directives['afterSuccess']();
+			}
+
+			setTimeout(function() { jQuery(document).trigger('cms:ajax_update', {divId: divid}); },1);
+  		},
+		'error': function(jqXHR, textStatus, errorThrown ) 
+		{ 
+			console.log('Exception on Ajax load:'); 
+			console.log(errorThrown); 
+			alert('Error: Cannot load content');
+			jQuery('#' + divid).find('.cms-spin-div-container').remove();
+		}
+	}
+
+
+
+	if (typeof extraAjaxParamsObj == 'object') {
+		for (var param_name in extraAjaxParamsObj) {
+			ajaxParams[param_name] = extraAjaxParamsObj[param_name];
+		}
+	}
+
+	jQuery.ajax($frm.attr('action'), ajaxParams);
+}
+
+
+
+
+//-----------------------------------------
+// find all FCKs and flush to hidden input
+//-----------------------------------------
+
+function ajax_FCK_prepare_submit()
+{
+	if (typeof(FCKeditorAPI) == 'object')
+	{
+		// old FCKEditor (v2)
+		
+		var fckNames;
+
+		if (typeof jQuery == 'function')
+		{
+			fckNames = jQuery('input.cms_fck_name_hidden_input').toArray();
+		}
+		else
+		{
+			fckNames = $$('input.cms_fck_name_hidden_input');
+		}
+
+		for (var i=0; i < fckNames.length; i++)
+		{
+
+			try 
+			{
+				var editor = FCKeditorAPI.GetInstance(fckNames[i].value) ;
+
+				if (editor) {
+					editor.UpdateLinkedField();
+				}	
+			}
+			catch (e)
+			{
+			}
+		}
+	}
+
+	if (typeof CKEDITOR != 'undefined')
+	{
+		// new CKEditor (v3)
+		var ckNames;
+
+		if (typeof jQuery == 'function')
+		{
+			ckNames = jQuery('input.cms_ck_name_hidden_input').toArray();
+		}
+		else
+		{
+			ckNames = $$('input.cms_ck_name_hidden_input');
+		}
+
+		for (var i=0; i < ckNames.length; i++)
+		{
+
+			try 
+			{
+				var editor = CKEDITOR.instances[ckNames[i].value] ;
+
+				if (editor) {
+					editor.updateElement();
+				}	
+			}
+			catch (e)
+			{
+			}
+		}
+	}
+}
+
+function util_getStyle(elem,styleProp)
+{
+	var y;
+
+	if (typeof elem.currentStyle != 'undefined')
+		y = elem.currentStyle[styleProp];
+	else if (typeof window.getComputedStyle != 'undefined')
+		y = document.defaultView.getComputedStyle(elem,null).getPropertyValue(styleProp);
+	return y;	
+}
+
+function util_getStyleMulti(elem,styleProp1, styleProp2, styleProp3)
+{
+	
+	var style = util_getStyle(elem, styleProp1);
+
+	if (!style && typeof styleProp2 != 'undefined')
+		style = util_getStyle(elem, styleProp2);
+
+	if (!style && typeof styleProp3 != 'undefined')
+		style = util_getStyle(elem, styleProp3);
+
+	return style;
+}
+
+
+// div_id id of div to put spinner in
+
+function ajax_spin_div(div_id)
+{
+
+	try {
+		var container = document.getElementById(div_id);
+
+		var spin_div = document.createElement("div");
+
+		spin_div.style.zIndex = 100;
+		spin_div.className = 'spin_div';
+
+		var firstChild = container.firstElementChild;
+
+		// position spin div relative to this relativeDiv
+  		var relativeDiv = document.createElement("div");
+
+
+		relativeDiv.appendChild(spin_div);
+		relativeDiv.className = 'cms-spin-div-container';
+
+		if (container.nodeName == 'TR' && firstChild) 
+		{
+			firstChild.style.overflow = 'visible';
+			container.insertBefore(relativeDiv, firstChild);
+		}
+		else if (firstChild) 
+		{
+			firstChild.parentNode.insertBefore(relativeDiv, firstChild);
+		}
+		else
+		{
+			container.appendChild(relativeDiv);
+		}
+
+
+		var setHeightTo, setWidthTo;
+
+		// try to get div that's exactly the size of 
+		// the container minus padding/border
+
+		if (navigator.appVersion.indexOf("MSIE 6.") != -1 /* ||
+			 navigator.appVersion.indexOf("MSIE 7.") != -1 */ ) {
+	
+			// put "feelers" out to get the height and width.
+			relativeDiv.style.width='100%';
+			spin_div.style.width='100%';
+			relativeDiv.style.height='100%';
+			spin_div.style.height='100%';
+
+			if (container.nodeName == 'TR')
+			{
+				setWidthTo = container.offsetWidth;
+			}
+			else
+			{
+				setWidthTo = spin_div.offsetWidth;
+			}
+
+			setHeightTo = spin_div.offsetHeight;
+	
+			relativeDiv.style.width='auto';
+			relativeDiv.style.height='auto';
+	
+			// after it is placed, div is absolute wrt the window,
+			// not wrt the relativeDiv
+			spin_div.style.position = 'absolute';
+			spin_div.style.top = container.scrollTop+'px';
+			spin_div.style.left = '0px';
+			relativeDiv.style.position = 'relative';
+	
+			// Set timeout due to IE7/IE8-compatibility mode problem (??)
+			setTimeout(function() {
+				spin_div.style.height = setHeightTo + 'px';
+				spin_div.style.width = setWidthTo + 'px';
+			}, 1);
+	
+
+		}
+		else {
+			relativeDiv.style.width='100%';
+			spin_div.style.width='100%';
+
+			if (container.nodeName == 'TR')
+			{
+				setWidthTo = container.offsetWidth
+			}
+			else
+			{
+				if (typeof jQuery == 'function')
+				{
+
+					//use jQuery if available
+					setWidthTo = jQuery('#' + div_id).width();
+				}
+				else
+				{
+					setWidthTo = spin_div.offsetWidth;
+				}
+
+			}
+
+			relativeDiv.style.width='auto';
+	
+			setHeightTo = container.scrollHeight;
+	
+			// subtract top/bottom padding if necessary
+			var paddingTop,  paddingBottom;
+	
+			try {
+				// Opera already subtracts padding
+				if (navigator.userAgent.indexOf('Opera') == -1) {
+
+					paddingBottom =  parseInt(util_getStyleMulti(container, 'paddingBottom', 'padding-bottom'));
+					paddingTop =  parseInt(util_getStyleMulti(container, 'paddingTop', 'padding-top'));
+	
+					if (typeof paddingBottom != 'number' || isNaN(paddingBottom))
+						paddingBottom = 0;
+	
+					if (typeof paddingTop != 'number' || isNaN(paddingTop))
+						paddingTop = 0;
+	
+	
+					// FF and IE don't add bottom padding when there is an overflow of content
+					// actual padding can be between 0 and bottomPadding depending on size of content
+					// Safari always adds padding at the bottom.
+	
+					setHeightTo -= paddingTop;
+	
+					if (navigator.userAgent.indexOf('AppleWebKit/') == -1) {
+						setHeightTo -= Math.min(paddingBottom, Math.max(0,
+				 			paddingBottom - (container.scrollHeight - container.clientHeight)));
+					}
+					else {
+						setHeightTo -= paddingBottom;
+					}
+				}
+			} catch (e) {}
+
+
+			spin_div.style.position = 'absolute';
+			relativeDiv.style.position = 'relative';
+
+			spin_div.style.height = setHeightTo + 'px';
+			spin_div.style.width = setWidthTo + 'px';
+		}
+	}
+	catch (e) {}
+} 
+
+
+/** For implementing the ajaxHistory code */
+var ajaxHistory_page = null;							// the "current" page
+var ajaxHistory_div = null;							// the containing <div>
+var ajaxHistory_history_form = 'ajaxHistory_form';	// the id of the <form>
+var ajaxHistory_url = null;							// where to send the user when back button is clicked
+var ajaxHistory_page_param = null;					// the parameter in the app page to indicate page number
+
+function ajaxHistory_init(div,history_url,url,page_param)
+{
+	ajaxHistory_div = div;
+	ajaxHistory_url = url;
+	ajaxHistory_page_param = page_param;
+	
+	document.writeln("<form id='" +ajaxHistory_history_form+ "' method='GET' action='" +history_url+ "' target='ajaxHistory_history'>");
+	document.writeln("<input type='hidden' name='page' value='' />");
+	document.writeln("</form>");
+	document.writeln("<iframe name='ajaxHistory_history' id='ajaxHistory_history' src='about:blank' frameborder='0' width='0' height='0'></iframe>");
+}
+
+function ajaxHistory_setPage(page,add_to_history)
+{
+	ajaxHistory_page = page;
+	if (add_to_history)
+	{
+		var frm = $(ajaxHistory_history_form);
+		frm['page'].value = page;
+		frm.submit();
+	}
+}
+
+function ajaxHistory_goto(page,add_to_history)
+{
+	ajaxHistory_page = null;		// lock
+	var params = {};
+	params[ajaxHistory_page_param] = page;
+	params['asAjax'] = 'Y';
+	params['history_back'] = 'Y';
+	
+	new Ajax.Updater(ajaxHistory_div,ajaxHistory_url,{
+		onCreate: function(){ajax_spin_div(ajaxHistory_div);},
+		parameters: params,
+		method: 'get',
+		onComplete: function(transport) {
+			ajaxHistory_setPage(page,add_to_history);
+		}
+	});
+}
+
+function ajaxHistory_submitForm(frm)
+{
+	ajaxHistory_page = null;		// lock
+	ajax_submitForm(ajaxHistory_div,frm);
+}
+
+function ajaxHistory_getPage()
+{
+	return ajaxHistory_page;
+}
+
+/**
+  * 
+  * Pass in either a string id or an element and function will
+  * look for the closest ancestor that's a lightbox container,
+  * colorbox container, or element with cms-ajax-container class
+  * and return the id (make sure ajax container has an id).
+  */
+
+function ajax_getContainerID(elem)
+{
+	if (typeof elem === 'String')
+	{
+		$elem = jQuery('#' + elem);	
+	}
+	else
+	{
+		$elem = jQuery(elem);
+	}
+
+	return $elem.closest('#cboxLoadedContent,#lbContent,.cms-ajax-container').prop('id');
+}

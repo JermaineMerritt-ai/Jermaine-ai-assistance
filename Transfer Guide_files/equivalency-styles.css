@@ -1,0 +1,361 @@
+.df_error {
+  color: red;
+}
+
+#tab-title {
+  display: inline-block;
+  width: 100%;
+  padding-right: 8px;
+  line-height: 32px; }
+
+.tabs .tabcontent {
+  padding: 6px 0; }
+
+h3.cns-faq-h3 {
+  font-size: 20px; }
+
+.right-arrow-border {
+  border-right: 1px solid #333333;
+  margin-right: 10px;
+  position: relative;
+  display: none; }
+
+.right-arrow-border::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-left: 10px solid #333;
+  border-bottom: 10px solid transparent;
+  position: absolute;
+  right: -10px;
+  top: calc(50% - 10px); }
+
+#equivalencies-home #equivalencies-home-items {
+  display: grid;
+  grid-gap: 24px; }
+  #equivalencies-home #equivalencies-home-items .home-item {
+    display: grid;
+    grid-template-columns: 1fr 58px;
+    grid-template-rows: 58px auto;
+    grid-gap: 12px;
+    border-radius: 9px;
+    width: 100%;
+    background: var(--theme-Med-Grey);
+    padding: 16px;
+    transition: all .1s;
+    transition-timing-function: ease-in; }
+    #equivalencies-home #equivalencies-home-items .home-item h2 {
+      font-size: 18px;
+      color: var(--theme-Blue);
+      margin: 0px 0px 12px 0px;
+      align-self: center; }
+    #equivalencies-home #equivalencies-home-items .home-item .home-item-img-box {
+      width: 58px;
+      height: 58px;
+      border: 3px solid #FFFFFF;
+      background: #FFFFFF;
+      border-radius: 3px; }
+    #equivalencies-home #equivalencies-home-items .home-item .home-item-text, #equivalencies-home #equivalencies-home-items .home-item .home-item-btn {
+      grid-column: 1 / span 2; }
+    #equivalencies-home #equivalencies-home-items .home-item .home-item-btn {
+      grid-row: 3;
+      align-self: end;
+      justify-self: end; }
+
+@media screen and (min-width: 1080px) {
+  #equivalencies-home #equivalencies-home-items {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    max-width: 1080px;
+    grid-template-rows: max-content; }
+    #equivalencies-home #equivalencies-home-items .home-item .home-item-btn {
+      justify-self: auto; } }
+#equivalencyFinder #search-by-course,
+#equivalencyFinder #search-by-institution {
+  background: none repeat scroll 0 0 #FFFFFF;
+  box-sizing: border-box;
+  margin-bottom: 32px;
+  display: grid;
+  grid-gap: 16px;
+  padding: 16px; }
+
+#equivalencyFinder #search-by-course .search-btn,
+#equivalencyFinder #search-by-institution .search-btn {
+  justify-self: end;
+  align-self: end; }
+
+@media screen and (min-width: 640px) {
+  #tab-title {
+    width: max-content; }
+
+  .right-arrow-border {
+    display: block;
+    grid-row: 2 / span 3; }
+
+  #equivalencyFinder #search-by-course, #equivalencyFinder #search-by-institution {
+    grid-template-columns: 280px 12px 280px 1fr; }
+
+  #equivalencyFinder #search-by-course #search-by-course-credit-from {
+    grid-column: 1;
+    grid-row: 2; }
+
+  #equivalencyFinder #search-by-course .instructions {
+    grid-column: 1 / span 4; }
+
+  #equivalencyFinder #search-by-course #search-by-course-subject {
+    grid-column: 3;
+    grid-row: 2; }
+
+  #equivalencyFinder #search-by-course #search-by-course-course-number {
+    grid-column: 3;
+    grid-row: 3; }
+
+  #equivalencyFinder #search-by-course #search-by-course-cns-only {
+    grid-column: 3;
+    grid-row: 4; }
+
+  #equivalencyFinder #search-by-course .search-btn {
+    grid-row: 2 / span 3;
+    justify-self: start; }
+
+  #equivalencyFinder #search-by-institution #search-by-institution-credit-from {
+    grid-column: 1;
+    grid-row: 2; }
+
+  #equivalencyFinder #search-by-institution #search-by-institution-credit-to {
+    grid-column: 1;
+    grid-row: 3; }
+
+  #equivalencyFinder #search-by-institution .instructions {
+    grid-column: 1 / span 4; }
+
+  #equivalencyFinder #search-by-institution #search-by-institution-subject {
+    grid-column: 3;
+    grid-row: 2; }
+
+  #equivalencyFinder #search-by-institution #search-by-institution-course-number {
+    grid-column: 3;
+    grid-row: 3; }
+
+  #equivalencyFinder #search-by-institution #search-by-institution-cns-only {
+    grid-column: 3;
+    grid-row: 4; }
+
+  #equivalencyFinder #search-by-institution .search-btn {
+    grid-row: 2 / span 3;
+    justify-self: start; } }
+.cns_asterisk {
+  color: #CC0000;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 0px 0 -16px; }
+
+.horizontalTabs a:not(.selected) {
+  cursor: pointer; }
+
+#equivalencyFinder input[type=text],
+#equivalencyFinder select,
+#equivalencyFinder input[type=text].ddCheck {
+  width: 100%;
+  height: 32px;
+  margin-bottom: 0px; }
+
+#equivalencyFinder .searchField .ddCheckArrow {
+  position: absolute;
+  left: revert;
+  right: 6px;
+  top: calc(50% - 6px);
+  font-size: 10px; }
+
+#equivalencyFinder .searchField {
+  padding: 0px;
+  display: block;
+  position: relative; }
+
+#equivalencyFinder .required:before {
+  line-height: 100%; }
+
+#countrydivcontainer {
+  min-height: 0px;
+  margin-bottom: 2em; }
+
+#searchResults {
+  min-height: 4em;
+  clear: both; }
+
+#equivalencyFinder table thead tr th {
+  font-weight: normal; }
+
+#equivalencyFinder table thead tr th.bold {
+  font-weight: 600; }
+
+.cns-marker {
+  color: #0f4876; }
+
+td .cns-marker {
+  float: right; }
+
+.clickable {
+  cursor: pointer; }
+
+.hi-light-row tr, .hi-light-row tr td a i.fas {
+  transition: all .2s; }
+
+.hi-light-row tr:hover {
+  background-color: rgba(254, 197, 36, 0.2) !important; }
+
+.hi-light-row tr:hover td {
+  color: #000000; }
+
+.hi-light-row tr:hover td a i.fas {
+  transform: scale(1.2);
+  color: #bc1f52; }
+
+@media screen and (min-width: 1025px) {
+  .column-stripe-2-left tr td:nth-child(2n+2) {
+    border-left: 1px solid #dedede !important; }
+
+  .column-stripe-2-left tr td:first-of-type {
+    background-color: rgba(0, 0, 0, 0.07); }
+
+  .column-stripe-3-left > tr > td:nth-child(4n+3) {
+    border-left: 1px solid #dedede !important; }
+
+  .column-stripe-3-left > tr > td:first-of-type {
+    background-color: rgba(0, 0, 0, 0.07); } }
+.hybridField button {
+  height: 32px; }
+
+.hybridField button:disabled {
+  background: #9cafc2; }
+
+.responsive-table td.more {
+  position: absolute;
+  right: 16px;
+  top: 0px; }
+
+#equivalencyFinder .hybridField .hybridText input[type=text] {
+  height: 32px;
+  margin-bottom: 0px; }
+
+select:not(disabled) {
+  background-color: transparent; }
+
+.details h2 {
+  font-size: 20px;
+  line-height: 1.2em;
+  color: var(--theme-Blue); }
+
+#equivalencyFinder .detail-table thead tr th {
+  background-color: var(--theme-Med-Grey);
+  color: var(--default); }
+
+#equivalencyFinder .detail-table tbody tr:last-of-type {
+  border-bottom: none; }
+
+#equivalencyFinder .detail-table th, #equivalencyFinder .detail-table td {
+  padding: 4px; }
+
+@media screen and (min-width: 480px) {
+  #equivalencyFinder .detail-table th, #equivalencyFinder .detail-table td {
+    padding: 8px; } }
+table#course-results > tbody > tr {
+  transition: background-color 0.25s ease; }
+
+table#course-results > tbody > tr.header:not(:first-of-type) {
+  border-top: 1px solid var(--theme-Dk-Grey); }
+
+table#course-results > tbody > tr.header[aria-expanded="false"]:hover {
+  background-color: var(--theme-Gold) !important; }
+
+table#course-results > tbody > tr td[headers="Subject"] {
+  padding-right: 36px; }
+
+table#compare-results > thead > tr > th.th-border {
+  border-bottom: 1px solid #666 !important; }
+
+table#compare-results > thead > tr > th.th-border:not(:last-of-type) {
+  border-right: 1px solid #666 !important; }
+
+table#compare-results > tbody > tr td {
+  vertical-align: top; }
+
+table#compare-results > tbody > tr td.compare-course {
+  padding: 0px; }
+
+table#compare-results > tbody > tr td[headers="Subject"] {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--theme-Blue); }
+
+table#compare-results > tbody > tr td[headers="Subject"]:before {
+  font-size: 18px;
+  font-weight: bold; }
+
+table#compare-results table.compare-course-list tbody tr {
+  border-bottom: none; }
+
+table#compare-results table.compare-course-list tbody tr td.institution-header {
+  font-weight: bold;
+  font-size: 17px; }
+
+table#compare-results table.compare-course-list tbody tr td.institution-header {
+  border-top: 1px dotted #666666 !important; }
+
+table#compare-results table.compare-course-list tbody tr td[headers="CNS"] {
+  order: 4; }
+
+table#compare-results table.compare-course-list tbody tr:not(:first-of-type) td.institution-header {
+  display: none; }
+
+@media screen and (min-width: 1025px) {
+  table#course-results > tbody > tr td[headers="Subject"] {
+    padding-right: 8px; }
+
+  table#compare-results > tbody > tr > td:not(:first-of-type) {
+    border-left: 1px solid var(--theme-Med-Grey); }
+
+  table#compare-results > tbody > tr > td[headers="Subject"] {
+    background: rgba(0, 0, 0, 0.05); }
+
+  table#compare-results > tbody > tr td[headers="Subject"] {
+    font-size: 16px;
+    font-weight: normal;
+    color: var(--normal); }
+
+  table#compare-results table.compare-course-list tbody tr td.institution-header {
+    display: none; }
+
+  table#compare-results table.compare-course-list tbody tr td[headers='CNS'] {
+    width: 48px;
+    min-width: 48px; }
+
+  table#compare-results > tbody > tr > td:nth-of-type(2) table.compare-course-list tbody tr td[headers='CNS'] {
+    width: 65px;
+    min-width: 65px; }
+
+  table#compare-results table.compare-course-list tbody tr td[headers='Credit Hours'] {
+    width: 65px;
+    min-width: 65px; }
+
+  table#compare-results table.compare-course-list tbody tr td[headers='Course'], table#compare-results table.compare-course-list tbody tr td[headers='Equivalent'] {
+    width: 100px;
+    min-width: 100px; } }
+.sr-only:not(:focus):not(:active) {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px; }
+
+#transfer-table tbody > tr > td {
+  border: none; }
+
+@media screen and (min-width: 1024px) {
+  #transfer-table tbody > tr > td {
+    border: 1px solid var(--theme-Med-Grey); } }
+/*# sourceMappingURL=equivalency-styles.css.map */
+
+/*# sourceMappingURL=equivalency-styles.css.map */
