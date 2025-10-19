@@ -1,0 +1,15 @@
+/* Minimal styles for the Codex homepage layout */
+.codex-homepage { padding: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #111; }
+.top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.middle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panel { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
+.panel-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+.powerbi-frame { height: 520px; }
+.capsule-player { width:100%; border-radius:6px; }
+.pipeline-steps { display:flex; gap:10px; flex-wrap:wrap; }
+.step { background:#f3f4f6; padding:8px 12px; border-radius:6px; }
+.lineage-list { display:flex; flex-direction:column; gap:8px; }
+.recognition-list { list-style:none; padding:0; margin:0; display:flex; gap:12px; }
+.echo-player { width:100%; }
+@media (max-width: 768px) { .top-grid, .middle-grid, .bottom-grid { grid-template-columns: 1fr; } }
