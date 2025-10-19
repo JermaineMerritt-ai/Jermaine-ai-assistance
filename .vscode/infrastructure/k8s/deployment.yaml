@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codex-dashboard
+  labels:
+    app: codex
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: codex
+  template:
+    metadata:
+      labels:
+        app: codex
+    spec:
+      containers:
+      - name: codex-api
+        image: jermaine/codex-api:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: codex-secrets
+              key: database_url
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codex-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: codex
+  ports:
+  - port: 80
+    targetPort: 8000
