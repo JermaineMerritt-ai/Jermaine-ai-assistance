@@ -14,5 +14,9 @@ Quickstart
    terraform plan -var-file=example.tfvars
    terraform apply -var-file=example.tfvars
 
+GitHub Actions
+- The CI/CD workflow requires a GitHub secret named `AZURE_CREDENTIALS` containing a service principal JSON used by `azure/login@v1`.
+   Use `az ad sp create-for-rbac --sdk-auth` to create the JSON and add it to the repo secrets.
+
 Security
 - Never commit real passwords. Use Key Vault, environment variables, or CI secrets.

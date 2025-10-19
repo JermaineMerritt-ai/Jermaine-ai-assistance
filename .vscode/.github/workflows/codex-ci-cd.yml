@@ -1,0 +1,65 @@
+name: Codex CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install backend deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run backend tests
+        run: |
+          pytest backend/tests
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps
+        run: npm ci --prefix frontend
+
+      - name: Build frontend
+        run: npm run build --prefix frontend
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init & Apply
+        run: |
+          cd infrastructure/azure
+          terraform init -input=false
+          terraform apply -auto-approve
+
+      - name: Deploy Backend (App Service)
+        run: |
+          # This uses az webapp up to create/update the App Service; adjust to your workflow
+          az webapp up --name codex-api --resource-group codex-rg --runtime "PYTHON|3.11"
+
+      - name: Deploy Frontend (Static Web App)
+        run: |
+          # Upload the built frontend to Static Web App (requires codex-ui to exist)
+          az staticwebapp upload --name codex-ui --source frontend/build
