@@ -1,0 +1,1 @@
+# Terraform\n.terraform/\n*.tfstate\n*.tfstate.*\ncrash.log\n.terraform.lock.hcl\n
