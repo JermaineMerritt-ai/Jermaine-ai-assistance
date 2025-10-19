@@ -1,15 +1,106 @@
-/* Minimal styles for the Codex homepage layout */
-.codex-homepage { padding: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #111; }
-.top-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.middle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.panel { background: #fff; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.06); }
-.panel-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
-.powerbi-frame { height: 520px; }
-.capsule-player { width:100%; border-radius:6px; }
-.pipeline-steps { display:flex; gap:10px; flex-wrap:wrap; }
-.step { background:#f3f4f6; padding:8px 12px; border-radius:6px; }
-.lineage-list { display:flex; flex-direction:column; gap:8px; }
-.recognition-list { list-style:none; padding:0; margin:0; display:flex; gap:12px; }
-.echo-player { width:100%; }
-@media (max-width: 768px) { .top-grid, .middle-grid, .bottom-grid { grid-template-columns: 1fr; } }
+/* src/pages/homepage.css */
+:root {
+	--bg: #0b1530;
+	--panel: #101a3f;
+	--accent: #d6a84b;
+	--text: #f1f3f8;
+	--muted: #a7b0c6;
+	--border: #233061;
+}
+
+.codex-homepage {
+	background: var(--bg);
+	color: var(--text);
+	min-height: 100vh;
+	display: grid;
+	grid-template-rows: auto auto auto;
+	gap: 16px;
+	padding: 24px;
+	font-family: Inter, system-ui, sans-serif;
+}
+
+.panel {
+	background: var(--panel);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	padding: 16px;
+}
+
+.panel-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.panel-header h2 {
+	color: var(--accent);
+	font-weight: 600;
+	font-size: 18px;
+	letter-spacing: 0.2px;
+	margin: 0;
+}
+
+.icon {
+	font-size: 18px;
+}
+
+.top-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.middle-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.bottom-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+.capsule-player,
+.powerbi-frame,
+.echo-player {
+	width: 100%;
+	height: 320px;
+	background: #091234;
+	border: 1px solid var(--border);
+	border-radius: 10px;
+}
+
+.powerbi-frame {
+	height: 360px;
+}
+
+.meta-item {
+	color: var(--muted);
+	margin-right: 16px;
+}
+
+.pipeline-steps {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	color: var(--muted);
+}
+
+.lineage-list .lineage-item {
+	margin-bottom: 8px;
+	color: var(--text);
+}
+
+.recognition-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.recognition-list li {
+	margin-bottom: 8px;
+}
+
