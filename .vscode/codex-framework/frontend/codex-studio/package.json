@@ -1,0 +1,60 @@
+{
+  "name": "codex-studio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "npm run build:renderer && tsc",
+    "start": "npm run build && electron .",
+    "dev:tsc": "tsc --watch",
+    "dev:renderer": "vite",
+    "build:renderer": "vite build",
+    "dev:electron": "wait-on http://localhost:5173 && electron .",
+    "dev": "concurrently \"npm:dev:renderer\" \"npm:dev:electron\""
+    ,
+    "test": "node tests/scheduling.test.js && node tests/scheduling-clip.test.js && node tests/scheduling-edgecases.test.js",
+    "test:puppeteer": "node ./tests/puppeteer-timeline.test.js",
+    "test:integration": "node ./tests/integration-render-ledger.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "build": {
+    "appId": "com.codex.studio",
+    "productName": "Codex Studio",
+    "files": ["dist/**", "package.json"],
+    "directories": {
+      "buildResources": "build"
+    },
+    "linux": {
+      "target": ["AppImage"]
+    },
+    "mac": {
+      "target": ["dmg"]
+    },
+    "win": {
+      "target": ["nsis"]
+    }
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.9.1",
+    "electron": "^38.3.0",
+    "ffmpeg-static": "^5.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "typescript": "^5.9.3",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.4",
+    "puppeteer": "^24.25.0",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1",
+    "vite": "^7.1.11",
+    "electron-builder": "^25.0.0",
+    "http-server": "^14.1.1"
+  }
+}
